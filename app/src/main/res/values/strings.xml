@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">BabelBlock</string>
+    <string name="select_language_text">Choose the spoken language</string>
+    <string name="sentence_pronounced_title">You said:</string>
+    <string name="begin_translation_button_content_description">Begin translation button</string>
+    <string name="add_language_button_content_description">Add language button</string>
+
+    <string-array name="languages">
+        <item>French</item>
+        <item>English</item>
+        <item>Chinese</item>
+        <item>Italian</item>
+        <item>Japanese</item>
+        <item>Russian</item>
+        <item>Spanish</item>
+    </string-array>
 </resources>

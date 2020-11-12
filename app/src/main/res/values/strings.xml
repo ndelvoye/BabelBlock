@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">BabelBlock</string>
     <string name="select_spoken_language_title">Select spoken language:</string>
+    <string name="select_language_to_translate_dialog_title">Select the language to translate into</string>
     <string name="sentence_pronounced_title">You said:</string>
     <string name="begin_translation_button_content_description">STT button</string>
     <string name="add_language_button_content_description">Add language button</string>
+    <string name="edit_button_text">Edit</string>
+    <string name="delete_button_text">Delete</string>
 </resources>

@@ -11,7 +11,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.google.android.material.snackbar.Snackbar
+import fr.enssat.babelblock.delvoye_legal.models.LocaleItem
 import fr.enssat.babelblock.delvoye_legal.tools.BlockService
 import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
 import kotlinx.android.synthetic.main.activity_main.*
@@ -22,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var speechToText: SpeechToTextTool
     private lateinit var selectedSpokenLanguage: Locale
+    private lateinit var localeAdapter: LocaleRecyclerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +36,32 @@ class MainActivity : AppCompatActivity() {
             checkPermission()
         }
 
+        // Init Toolbar
+        setSupportActionBar(myToolbar)
+        myToolbar.title = R.string.app_name.toString()
+
+        // Init LocaleList
+        initRecyclerView()
+        addDataSet()
+
+        // Init STT language to French (first item of Spinner)
         val service = BlockService(this)
-        // Recognize the sentence in selected spoken language "Spinner"
         selectedSpokenLanguage = stringToLocale("French")
         speechToText = service.speechToText(selectedSpokenLanguage)
+
+
+        // Listeners
+        selectSpokenLanguageSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing
+            }
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedSpokenLanguage = stringToLocale(selectSpokenLanguageSpinner.selectedItem.toString())
+                speechToText = service.speechToText(selectedSpokenLanguage)
+                Log.d("Spinner", "Selected spoken language = $selectedSpokenLanguage")
+            }
+        }
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -56,17 +83,20 @@ class MainActivity : AppCompatActivity() {
             false
         }
 
-        selectSpokenLanguageSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
-            }
-
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedSpokenLanguage = stringToLocale(selectSpokenLanguageSpinner.selectedItem.toString())
-                speechToText = service.speechToText(selectedSpokenLanguage)
-                Log.d("Spinner", "Selected spoken language = $selectedSpokenLanguage")
+        addLanguageButton.setOnClickListener {
+            Log.d("addLanguageButton", "BUTTON PRESSED")
+            MaterialDialog(this).title(R.string.select_language_to_translate_dialog_title).show {
+                listItemsSingleChoice(R.array.languages) { _, _, text ->
+                    Log.d("selectedLanguageDialog", "Selected item '$text'")
+                    localeAdapter.addItem(LocaleItem(stringToLocale(text.toString())), localeAdapter.itemCount)
+                }
             }
         }
+    }
+
+    private fun addDataSet() {
+        val data = DataSource.createDataSet()
+        localeAdapter.submitList(data)
     }
 
     override fun onDestroy() {
@@ -74,20 +104,22 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun checkPermission() {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), recordAudioRequestCode)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == recordAudioRequestCode && grantResults.isNotEmpty()) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
+    /**
+     * LocaleRecyclerView initialisation
+     */
+    private fun initRecyclerView() {
+        localeRecyclerView.apply {
+            localeRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+            localeAdapter = LocaleRecyclerAdapter()
+            localeRecyclerView.adapter = localeAdapter
         }
     }
 
+    /**
+     * Useful functions
+     */
     private fun stringToLocale(s: String): Locale {
-        return when(s) {
+        return when (s) {
             "French" -> Locale.FRENCH
             "English" -> Locale.ENGLISH
             "Chinese" -> Locale.CHINESE
@@ -95,6 +127,24 @@ class MainActivity : AppCompatActivity() {
             "Japanese" -> Locale.JAPANESE
             "German" -> Locale.GERMAN
             else -> throw Exception("Locale not recognized : $s")
+        }
+    }
+
+    /**
+     * Check permissions
+     */
+    private fun checkPermission() {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), recordAudioRequestCode)
+    }
+
+    /**
+     * Request Permissions
+     */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == recordAudioRequestCode && grantResults.isNotEmpty()) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
         }
     }
 }

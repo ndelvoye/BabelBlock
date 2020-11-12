@@ -7,10 +7,11 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
 import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
 import java.util.*
 
-class SpeechRecognizerHandler(context: Context, locale: Locale) : SpeechToTextTool {
+class SpeechRecognizerHandler(context: Context, locale: Locale?) : SpeechToTextTool {
 
     init {
         if (SpeechRecognizer.isRecognitionAvailable(context).not()) {
@@ -61,7 +62,9 @@ class SpeechRecognizerHandler(context: Context, locale: Locale) : SpeechToTextTo
 
     private val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toString())
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, locale.toString())
+        putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, locale.toString())
     }
 
     override fun start(listener: SpeechToTextTool.Listener) {

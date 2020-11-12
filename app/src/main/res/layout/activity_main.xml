@@ -7,72 +7,86 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- First line-->
-    <TextView
-        android:id="@+id/selectSpokenLanguageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/select_language_text"
-        app:layout_constraintBottom_toTopOf="@+id/sentencePronouncedTitle"
-        app:layout_constraintEnd_toStartOf="@+id/selectSpokenLanguageSpinner"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="411dp"
+        android:layout_height="55dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Spinner
-        android:id="@+id/selectSpokenLanguageSpinner"
-        android:layout_width="125dp"
-        android:layout_height="31dp"
-        android:entries="@array/languages"
-        android:spinnerMode="dropdown"
-        app:layout_constraintStart_toEndOf="@id/selectSpokenLanguageTextView"
-        app:layout_constraintEnd_toStartOf="@id/beginTranslationButton"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/sentencePronounced" />
+        <TextView
+            android:id="@+id/selectSpokenLanguageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_spoken_language_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/selectSpokenLanguageSpinner"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.171"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/beginTranslationButton"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:contentDescription="@string/begin_translation_button_content_description"
-        app:layout_constraintStart_toEndOf="@+id/selectSpokenLanguageSpinner"
+        <Spinner
+            android:id="@+id/selectSpokenLanguageSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/selectSpokenLanguageText"
+            app:layout_constraintEnd_toStartOf="@+id/startTalkButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:entries="@array/languages"
+            />
+
+        <ImageView
+            android:id="@+id/startTalkButton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/begin_translation_button_content_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/selectSpokenLanguageSpinner"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_baseline_mic_24" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="409dp"
+        android:layout_height="76dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/sentencePronounced"
-        app:srcCompat="@drawable/ic_baseline_mic_24" />
-
-    <!-- Deuxième ligne -->
-    <TextView
-        android:id="@+id/sentencePronouncedTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sentence_pronounced_title"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/sentencePronounced"
-        app:layout_constraintTop_toBottomOf="@+id/selectSpokenLanguageTextView"
-        app:layout_constraintBottom_toTopOf="@+id/languagesRecyclerView" />
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
-    <TextView
-        android:id="@+id/sentencePronounced"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/languagesRecyclerView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/sentencePronouncedTitle"
-        app:layout_constraintTop_toBottomOf="@+id/beginTranslationButton"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        <TextView
+            android:id="@+id/sentencePronouncedTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sentence_pronounced_title"
+            app:layout_constraintBottom_toBottomOf="@+id/sentencePronounced"
+            app:layout_constraintEnd_toStartOf="@+id/sentencePronounced"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/sentencePronounced" />
 
-    <!-- List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/languagesRecyclerView"
-        android:layout_width="413dp"
-        android:layout_height="628dp"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/sentencePronounced"
+            android:layout_width="307dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/sentencePronouncedTitle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.508" />
 
-    <!-- Action button -->
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addLanguageButton"
         android:layout_width="wrap_content"
@@ -86,5 +100,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:rippleColor="#FFFFFF"
         app:srcCompat="@android:drawable/ic_input_add" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/languagesRecyclerView"
+        android:layout_width="412dp"
+        android:layout_height="586dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

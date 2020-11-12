@@ -29,7 +29,7 @@ class TranslatorHandler(context: Context, from: Locale, to: Locale): Translation
     override fun translate(text: String, callback: (String) -> Unit) {
         translator.translate(text)
             .addOnSuccessListener(callback)
-            .addOnFailureListener { e -> Log.e("Translation", "Translation falied", e) }
+            .addOnFailureListener { e -> Log.e("Translation", "Translation failed", e) }
     }
 
     override fun close() {

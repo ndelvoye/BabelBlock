@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                 speechToText.start(object : SpeechToTextTool.Listener {
                     override fun onResult(text: String, isFinal: Boolean) {
                         if (isFinal) {
-                            sentencePronounced.text = text
+                            sentencePronounced.text = text.capitalize(selectedSpokenLanguage)
                         }
                     }
                 })

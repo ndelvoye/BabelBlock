@@ -117,11 +117,9 @@
         android:clickable="true"
         android:contentDescription="@string/add_language_button_content_description"
         android:focusable="true"
-        android:tint="@color/colorAccent"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:rippleColor="@color/colorAccent"
         app:srcCompat="@drawable/ic_baseline_add_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

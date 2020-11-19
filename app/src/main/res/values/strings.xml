@@ -7,4 +7,5 @@
     <string name="add_language_button_content_description">Add language button</string>
     <string name="edit_button_text">Edit</string>
     <string name="delete_button_text">Delete</string>
+    <string name="language_flag">Language flag</string>
 </resources>

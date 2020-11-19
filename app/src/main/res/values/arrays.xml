@@ -3,9 +3,10 @@
     <array name="languages">
         <item>French</item>
         <item>English</item>
-        <item>Chinese</item>
-        <item>Italian</item>
-        <item>Japanese</item>
         <item>German</item>
+        <item>Spanish</item>
+        <item>Italian</item>
+        <item>Chinese</item>
+        <item>Japanese</item>
     </array>
 </resources>

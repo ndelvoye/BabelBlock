@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         return when (s) {
             "French" -> Locale.FRENCH
             "English" -> Locale.ENGLISH
+            "Spanish" -> Locale("es", "ES")
             "Chinese" -> Locale.CHINESE
             "Italian" -> Locale.ITALIAN
             "Japanese" -> Locale.JAPANESE

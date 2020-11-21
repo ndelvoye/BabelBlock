@@ -66,19 +66,32 @@ class MainActivity : AppCompatActivity() {
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 Log.d("RecoUI", "Started")
-                Snackbar.make(startTalkButton, "You can talk...", Snackbar.LENGTH_SHORT).show()
-                sentencePronounced.text = ""
+
+                pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
+                sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
+                sentencePronounced.text = "" // Delete old SpeechToText
+                sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
+
                 v.performClick()
+                Snackbar.make(startTalkButton, "Listening...", Snackbar.LENGTH_SHORT).show()
                 speechToText.start(object : SpeechToTextTool.Listener {
                     override fun onResult(text: String, isFinal: Boolean) {
                         if (isFinal) {
+                            sentencePronouncedSpinner.visibility = View.INVISIBLE
+                            sentencePronouncedTitle.visibility = View.VISIBLE
+                            sentencePronounced.visibility = View.VISIBLE
                             sentencePronounced.text = text.capitalize(selectedSpokenLanguage)
                         }
                     }
+
+                    override fun onError() {
+                        Snackbar.make(startTalkButton, "An error occurred... Try again !", Snackbar.LENGTH_SHORT).show()
+                        sentencePronouncedSpinner.visibility = View.INVISIBLE
+                        sentencePronouncedTitle.visibility = View.INVISIBLE
+                        sentencePronounced.visibility = View.INVISIBLE
+                        pressTheButton.visibility = View.VISIBLE
+                    }
                 })
-            } else if (event.action == MotionEvent.ACTION_DOWN) {
-                Log.d("RecoUI", "Stopped")
-                speechToText.stop()
             }
             false
         }

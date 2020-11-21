@@ -20,6 +20,7 @@ interface TranslationTool {
 interface SpeechToTextTool {
     interface Listener {
         fun onResult(text: String, isFinal: Boolean)
+        fun onError()
     }
     fun start(listener: Listener)
     fun stop()

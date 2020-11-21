@@ -33,6 +33,7 @@ class SpeechRecognizerHandler(context: Context, locale: Locale?) : SpeechToTextT
             override fun onEndOfSpeech() {}
             override fun onError(error: Int) {
                 Log.d("Reco", "Error : $error")
+                listener?.onError()
             }
 
             override fun onBeginningOfSpeech() {

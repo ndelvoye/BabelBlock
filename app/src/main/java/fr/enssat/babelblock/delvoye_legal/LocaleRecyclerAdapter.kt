@@ -1,21 +1,20 @@
 package fr.enssat.babelblock.delvoye_legal
 
-import android.content.res.Resources
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import fr.enssat.babelblock.delvoye_legal.models.LocaleItem
+import kotlinx.android.synthetic.main.layout_locale_list_item.view.*
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
 class LocaleRecyclerAdapter : RecyclerView.Adapter<LocaleRecyclerAdapter.ViewHolder>() {
-    private var localeItemList =  ArrayList<LocaleItem>()
+    private var localeItemList = ArrayList<LocaleItem>()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -23,14 +22,16 @@ class LocaleRecyclerAdapter : RecyclerView.Adapter<LocaleRecyclerAdapter.ViewHol
 
     override fun getItemCount() = localeItemList.size
 
-    override fun onBindViewHolder(myViewHolder: ViewHolder, position: Int) {
+    // Update ViewHolder with a LocaleItem
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val item = localeItemList[position]
-        myViewHolder.bind(item)
-        myViewHolder.itemView.tag = position
-        myViewHolder.deleteButton.setOnClickListener {
+        viewHolder.bind(item)
+        viewHolder.itemView.tag = position
+        viewHolder.itemView.chain_translation_text.text = item.translatedText
+        viewHolder.deleteButton.setOnClickListener {
             this.localeItemList.removeAt(position)
             notifyItemRemoved(position)
-            Log.d("LocaleRecyclerAdapter", "Removed item ${item.language} ($position)")
+            Timber.d("Removed item ${item.locale} ($position)")
         }
     }
 
@@ -38,11 +39,15 @@ class LocaleRecyclerAdapter : RecyclerView.Adapter<LocaleRecyclerAdapter.ViewHol
         return ViewHolder.from(parent)
     }
 
+    fun getList(): ArrayList<LocaleItem> {
+        return localeItemList
+    }
+
     /**
      * Add a LocaleItem
      */
     fun addItem(item: LocaleItem, position: Int) {
-        Log.d("LocaleRecyclerAdapter", "Added item ${item.language} ($position)")
+        Timber.d("Added item ${item.locale} (${position})")
         this.localeItemList.add(item)
         notifyItemInserted(position)
     }
@@ -51,14 +56,15 @@ class LocaleRecyclerAdapter : RecyclerView.Adapter<LocaleRecyclerAdapter.ViewHol
         localeItemList = localeList
     }
 
-    class ViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView){
+    class ViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val languageFlagImg: ImageView = itemView.findViewById(R.id.language_flag_img)
-        val chainTranslationText: TextView = itemView.findViewById(R.id.chain_translation_text)
-        val editButton: Button = itemView.findViewById(R.id.edit_locale_button)
+        private val chainTranslationText: TextView =
+            itemView.findViewById(R.id.chain_translation_text)
+        private val editButton: Button = itemView.findViewById(R.id.edit_locale_button)
         val deleteButton: Button = itemView.findViewById(R.id.delete_locale_button)
 
         fun bind(item: LocaleItem) {
-            languageFlagImg.setImageResource(stringToFlagImg(item.language.language))
+            languageFlagImg.setImageResource(stringToFlagImg(item.locale.language))
         }
 
         private fun stringToFlagImg(s: String): Int {

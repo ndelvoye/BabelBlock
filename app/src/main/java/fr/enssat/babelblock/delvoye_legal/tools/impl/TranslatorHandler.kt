@@ -1,35 +1,36 @@
 package fr.enssat.babelblock.delvoye_legal.tools.impl
 
 import android.content.Context
-import android.util.Log
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import fr.enssat.babelblock.delvoye_legal.tools.TranslationTool
-import java.util.Locale
+import timber.log.Timber
+import java.util.*
 
-class TranslatorHandler(context: Context, from: Locale, to: Locale): TranslationTool {
+class TranslatorHandler(context: Context, from: Locale, to: Locale) : TranslationTool {
 
     private val options = TranslatorOptions.Builder()
-                                .setSourceLanguage(from.language)
-                                .setTargetLanguage(to.language)
-                                .build()
+        .setSourceLanguage(from.language)
+        .setTargetLanguage(to.language)
+        .build()
 
     private val translator = Translation.getClient(options)
 
     private val conditions = DownloadConditions.Builder()
-                                .requireWifi()
-                                .build()
+        .requireWifi()
+        .build()
 
-    init {  translator.downloadModelIfNeeded(conditions)
-                .addOnSuccessListener { Log.d("Translation", "download completed") }
-                .addOnFailureListener { e -> Log.e("Translation", "Download failed ", e) }
+    init {
+        translator.downloadModelIfNeeded(conditions)
+            .addOnSuccessListener { Timber.d("Model download completed") }
+            .addOnFailureListener { e -> Timber.e(e, "Model download failed") }
     }
 
     override fun translate(text: String, callback: (String) -> Unit) {
         translator.translate(text)
             .addOnSuccessListener(callback)
-            .addOnFailureListener { e -> Log.e("Translation", "Translation failed", e) }
+            .addOnFailureListener { e -> Timber.e(e, "Translation failed") }
     }
 
     override fun close() {

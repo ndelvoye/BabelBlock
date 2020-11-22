@@ -6,16 +6,15 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
-import androidx.core.app.ActivityCompat.startActivityForResult
 import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
+import timber.log.Timber
 import java.util.*
 
 class SpeechRecognizerHandler(context: Context, locale: Locale?) : SpeechToTextTool {
 
     init {
         if (SpeechRecognizer.isRecognitionAvailable(context).not()) {
-            Log.e("Reco", "Sorry but Speech recognizer is not available on this device")
+            Timber.e("Sorry but Speech recognizer is not available on this device")
             throw IllegalStateException()
         }
     }
@@ -25,34 +24,34 @@ class SpeechRecognizerHandler(context: Context, locale: Locale?) : SpeechToTextT
     private val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
         setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
-                Log.d("Reco", "ready $params")
+                Timber.d("ready $params")
             }
 
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {}
             override fun onError(error: Int) {
-                Log.d("Reco", "Error : $error")
+                Timber.d("Error : $error")
                 listener?.onError()
             }
 
             override fun onBeginningOfSpeech() {
-                Log.d("Reco", "Start Listening")
+                Timber.d("Start Listening")
                 listener?.onResult("Start Listening...", false)
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
-                Log.d("Reco", "partial : $partialResults")
+                Timber.d("partial : $partialResults")
                 partialResults?.getResult()?.apply {
-                    Log.d("Reco", "partial : $this")
+                    Timber.d("partial : $this")
                     listener?.onResult(this, false)
                 }
             }
 
             override fun onResults(results: Bundle?) {
-                Log.d("Reco", "result : $results")
+                Timber.d("result : $results")
                 results?.getResult()?.apply {
-                    Log.d("Reco", "result : $this")
+                    Timber.d("result : $this")
                     listener?.onResult(this, true)
                 }
             }

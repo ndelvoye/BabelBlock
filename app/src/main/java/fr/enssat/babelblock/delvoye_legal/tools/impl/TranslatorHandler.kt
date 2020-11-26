@@ -5,6 +5,8 @@ import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import fr.enssat.babelblock.delvoye_legal.tools.TranslationTool
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import timber.log.Timber
 import java.util.*
 
@@ -27,10 +29,14 @@ class TranslatorHandler(context: Context, from: Locale, to: Locale) : Translatio
             .addOnFailureListener { e -> Timber.e(e, "Model download failed") }
     }
 
-    override fun translate(text: String, callback: (String) -> Unit) {
+    override suspend fun translate(text: String): Deferred<String> {
+        val deferred = CompletableDeferred<String>()
+
         translator.translate(text)
-            .addOnSuccessListener(callback)
-            .addOnFailureListener { e -> Timber.e(e, "Translation failed") }
+            .addOnSuccessListener { result -> deferred.complete(result) }
+            .addOnFailureListener { exception -> deferred.completeExceptionally(exception) }
+
+        return deferred
     }
 
     override fun close() {

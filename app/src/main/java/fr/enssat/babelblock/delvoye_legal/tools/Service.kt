@@ -1,9 +1,11 @@
 package fr.enssat.babelblock.delvoye_legal.tools
 
 import android.content.Context
+import com.google.android.gms.tasks.Task
 import fr.enssat.babelblock.delvoye_legal.tools.impl.SpeechRecognizerHandler
 import fr.enssat.babelblock.delvoye_legal.tools.impl.TextToSpeechHandler
 import fr.enssat.babelblock.delvoye_legal.tools.impl.TranslatorHandler
+import kotlinx.coroutines.Deferred
 import java.util.Locale
 
 interface TextToSpeechTool {
@@ -13,7 +15,7 @@ interface TextToSpeechTool {
 }
 
 interface TranslationTool {
-    fun translate(text: String, callback: (String) -> Unit)
+    suspend fun translate(text: String): Deferred<String>
     fun close()
 }
 

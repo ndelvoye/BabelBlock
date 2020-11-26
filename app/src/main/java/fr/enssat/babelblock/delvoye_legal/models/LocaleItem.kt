@@ -5,6 +5,5 @@ import java.util.*
 
 data class LocaleItem(
         var locale: Locale,
-        var translatedText: String,
-        var state: State
+        var translatedText: String
 )

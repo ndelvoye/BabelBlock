@@ -11,12 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
+import androidx.work.*
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import fr.enssat.babelblock.delvoye_legal.models.LocaleItem
 import fr.enssat.babelblock.delvoye_legal.tools.BlockService
@@ -24,8 +22,14 @@ import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
 import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
 import fr.enssat.babelblock.delvoye_legal.workers.TranslateWorker
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 import java.util.*
+import kotlin.reflect.typeOf
 
 class MainActivity : AppCompatActivity() {
     private val recordAudioRequestCode = 1
@@ -98,28 +102,31 @@ class MainActivity : AppCompatActivity() {
                 speechToText.start(object : SpeechToTextTool.Listener {
                     override fun onResult(text: String, isFinal: Boolean) {
                         if (isFinal) {
-                            sentencePronouncedSpinner.visibility = View.INVISIBLE
-                            sentencePronouncedTitle.visibility = View.VISIBLE
-                            sentencePronounced.visibility = View.VISIBLE
-                            sentencePronounced.text = text.capitalize(selectedSpokenLanguage)
-                            val localeItemList = localeAdapter.getList()
-                            for (localeItem in localeItemList) {
-                                val index = localeAdapter.getList().indexOf(localeItem)
-                                if (index == 0) {
-                                    setOneTimeWorkRequest(
-                                        0,
-                                        sentencePronounced.text as String,
-                                        selectedSpokenLanguage,
-                                        localeItem.locale
-                                    )
-                                } else {
-                                    val previousItem: LocaleItem = localeItemList[index - 1]
-                                    setOneTimeWorkRequest(
-                                        index,
-                                        sentencePronounced.text as String,
-                                        previousItem.locale,
-                                        localeItem.locale
-                                    )
+                            CoroutineScope(Dispatchers.Main).launch {
+                                sentencePronouncedSpinner.visibility = View.INVISIBLE
+                                sentencePronouncedTitle.visibility = View.VISIBLE
+                                sentencePronounced.visibility = View.VISIBLE
+                                sentencePronounced.text = text.capitalize(selectedSpokenLanguage)
+                                val localeItemList = localeAdapter.getList()
+                                // build the flow
+                                val localeItemFlow = flow {
+                                    localeItemList.forEach { emit(it) }
+                                }
+                                // consume the flow (Sequentially)
+                                var count = 0
+                                localeItemFlow.map { localeItem ->
+                                    val index = localeAdapter.getList().indexOf(localeItem)
+                                    Timber.d("Started $localeItem (#$index)")
+                                    var previousItem = LocaleItem(selectedSpokenLanguage, text)
+                                    if (index != 0) previousItem = localeItemList[index - 1]
+                                    service.translator(previousItem.locale, localeItem.locale)
+                                        .translate(previousItem.translatedText).await()
+                                }.onEach { res ->
+                                    localeItemList[count].translatedText = res
+                                    localeAdapter.notifyDataSetChanged()
+                                    count++
+                                }.collect {
+                                    Timber.d("Translated $it")
                                 }
                             }
                         }
@@ -150,8 +157,7 @@ class MainActivity : AppCompatActivity() {
                     localeAdapter.addItem(
                         LocaleItem(
                             LocaleUtils.stringToLocale(text.toString()),
-                            "",
-                            WorkInfo.State.BLOCKED
+                            ""
                         ), localeAdapter.itemCount
                     )
                 }
@@ -197,14 +203,20 @@ class MainActivity : AppCompatActivity() {
             //.setConstraints(constraints)
             .setInputData(data)
             .build()
-        workManager.enqueue(oneTimeWorkRequest)
+        workManager.beginUniqueWork(
+            "TranslationJob",
+            ExistingWorkPolicy.REPLACE,
+            oneTimeWorkRequest
+        ).enqueue()
         workManager.getWorkInfoByIdLiveData(oneTimeWorkRequest.id)
             .observe(this, {
                 if (it.state.isFinished) {
                     localeAdapter.getList()[pos].translatedText =
                         it.outputData.getString("sentenceTranslated").toString()
-                    Timber.d("workManagerSortie = %s",
-                        it.outputData.getString("sentenceTranslated").toString())
+                    Timber.d(
+                        "workManagerSortie = %s",
+                        it.outputData.getString("sentenceTranslated").toString()
+                    )
                     localeAdapter.notifyDataSetChanged()
                 }
             })

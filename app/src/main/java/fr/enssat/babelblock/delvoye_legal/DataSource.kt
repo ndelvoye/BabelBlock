@@ -9,7 +9,7 @@ class DataSource {
     companion object {
         fun createDataSet(): ArrayList<LocaleItem> {
             val list = ArrayList<LocaleItem>()
-            list.add(LocaleItem(Locale.ENGLISH, "", WorkInfo.State.BLOCKED))
+            list.add(LocaleItem(Locale.ENGLISH, ""))
             return list
         }
     }

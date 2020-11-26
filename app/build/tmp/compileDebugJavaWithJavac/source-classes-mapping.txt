@@ -1,0 +1,2 @@
+fr/enssat/babelblock/delvoye_legal/BuildConfig.java
+ fr.enssat.babelblock.delvoye_legal.BuildConfig

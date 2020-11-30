@@ -1,10 +1,9 @@
-package fr.enssat.babelblock.delvoye_legal.tools
+package fr.enssat.babelblock.delvoye_legal.Tools
 
 import android.content.Context
-import com.google.android.gms.tasks.Task
-import fr.enssat.babelblock.delvoye_legal.tools.impl.SpeechRecognizerHandler
-import fr.enssat.babelblock.delvoye_legal.tools.impl.TextToSpeechHandler
-import fr.enssat.babelblock.delvoye_legal.tools.impl.TranslatorHandler
+import fr.enssat.babelblock.delvoye_legal.Tools.impl.SpeechRecognizerHandler
+import fr.enssat.babelblock.delvoye_legal.Tools.impl.TextToSpeechHandler
+import fr.enssat.babelblock.delvoye_legal.Tools.impl.TranslatorHandler
 import kotlinx.coroutines.Deferred
 import java.util.Locale
 
@@ -15,7 +14,7 @@ interface TextToSpeechTool {
 }
 
 interface TranslationTool {
-    suspend fun translate(text: String): Deferred<String>
+    fun translateAsync(text: String): Deferred<String>
     fun close()
 }
 
@@ -35,7 +34,7 @@ class BlockService(private val context: Context) {
     }
 
     fun translator(from: Locale, to: Locale): TranslationTool =
-        TranslatorHandler(context.applicationContext, from, to)
+        TranslatorHandler(from, to)
 
     fun speechToText(from: Locale?): SpeechToTextTool =
         SpeechRecognizerHandler(context.applicationContext, from)

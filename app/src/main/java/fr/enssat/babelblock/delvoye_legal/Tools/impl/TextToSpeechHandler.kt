@@ -1,9 +1,9 @@
-package fr.enssat.babelblock.delvoye_legal.tools.impl
+package fr.enssat.babelblock.delvoye_legal.Tools.impl
 
 import android.content.Context
 import android.os.Build
 import android.speech.tts.TextToSpeech
-import fr.enssat.babelblock.delvoye_legal.tools.TextToSpeechTool
+import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
 import timber.log.Timber
 import java.util.*
 

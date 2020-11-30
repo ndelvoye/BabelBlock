@@ -99,29 +99,39 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sentence_pronounced_title"
+            android:layout_marginStart="8dp"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="@+id/sentencePronounced"
-            app:layout_constraintEnd_toStartOf="@+id/sentencePronounced"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/sentencePronounced" />
 
-
         <TextView
             android:id="@+id/sentencePronounced"
-            android:layout_width="307dp"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/sentencePronouncedListenButton"
             app:layout_constraintStart_toEndOf="@+id/sentencePronouncedTitle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/sentencePronouncedListenButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="invisible"
+            android:background="@drawable/ic_baseline_volume_up_24"
+            android:contentDescription="@string/edit_button_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/localeRecyclerView"
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="8dp"

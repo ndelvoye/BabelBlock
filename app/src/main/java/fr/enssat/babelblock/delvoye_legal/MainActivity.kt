@@ -7,66 +7,160 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.*
+import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
-import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
-import fr.enssat.babelblock.delvoye_legal.models.LocaleItem
-import fr.enssat.babelblock.delvoye_legal.tools.BlockService
-import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
-import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
-import fr.enssat.babelblock.delvoye_legal.workers.TranslateWorker
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.nl.translate.TranslateRemoteModel
+import fr.enssat.babelblock.delvoye_legal.Adapter.TranslationBlocksAdapter
+import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.Tools.BlockService
+import fr.enssat.babelblock.delvoye_legal.Tools.SpeechToTextTool
+import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
+import fr.enssat.babelblock.delvoye_legal.Utils.LocaleUtils
+import fr.enssat.babelblock.delvoye_legal.ViewModels.TranslationBlockViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
-import kotlin.reflect.typeOf
+
 
 class MainActivity : AppCompatActivity() {
     private val recordAudioRequestCode = 1
 
     private lateinit var speechToText: SpeechToTextTool
-    private lateinit var selectedSpokenLanguage: Locale
-    private lateinit var localeAdapter: LocaleRecyclerAdapter
+    private lateinit var textToSpeech: TextToSpeechTool
+    private lateinit var selectedSpokenLanguage: String
+    private var translationBlocksCounter: Int = 0
+    private var translationBlocksMaxPos: Int = 0
+
+    private val translationBlockViewModel: TranslationBlockViewModel by viewModels {
+        TranslationBlockViewModelFactory((application as TranslationBlocksApplication).repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
         ) {
             checkPermission()
         }
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
+        // LOGS
+        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
 
-        // Init Toolbar
+        // TOOLBAR
         setSupportActionBar(myToolbar)
         myToolbar.title = R.string.app_name.toString()
 
-        // Init LocaleList
-        initRecyclerView()
-        addDataSet()
+        // Downloading every models
+        var count = 0
+        val modelManager = RemoteModelManager.getInstance()
+        modelManager
+            .getDownloadedModels(TranslateRemoteModel::class.java)
+            .addOnSuccessListener { models ->
+                LocaleUtils.getAvailableLocales().forEach {
+                    if (!models.contains(TranslateRemoteModel.Builder(it.language).build())) {
+                        modelManager.download(
+                            TranslateRemoteModel.Builder(it.language).build(),
+                            DownloadConditions.Builder()
+                                .requireWifi()
+                                .build()
+                        ).addOnSuccessListener {
+                            count++
+                        }
+                    } else {
+                        count++
+                    }
+                }
+            }
+            .addOnFailureListener {
+                // Error.
+            }
 
-        // Init STT language to French (first item of Spinner)
+        // RECYCLER VIEW & ADAPTER
+        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        val adapter = TranslationBlocksAdapter()
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Add an observer on the LiveData returned by getTranslationBlocks
+        // The onChanged() method fires when the observed data changes and the activity is
+        // in the foreground.
+        translationBlockViewModel.allTranslationBlocks.observe(this) { translationBlocks ->
+            translationBlocks.let {
+                adapter.submitList(it)
+            }
+            translationBlocksCounter = translationBlocks.size
+            translationBlocks.forEach {
+                if (it.position > translationBlocksMaxPos) translationBlocksMaxPos = it.position
+            }
+        }
+
+        // Drag & drop + Delete by Swiping (UI)
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun getMovementFlags(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+                val swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
+                return makeMovementFlags(dragFlags, swipeFlags)
+            }
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val from = viewHolder.adapterPosition
+                val to = target.adapterPosition
+                if (from != -1 && to != -1) {
+                    val item1 = adapter.currentList[from]
+                    val item2 = adapter.currentList[to]
+                    if (item1 != null && item2 != null) {
+                        val newItem2 = item2.copy()
+                        item2.position = item1.position
+                        item1.position = newItem2.position
+                        translationBlockViewModel.update(item1)
+                        translationBlockViewModel.update(item2)
+                        adapter.notifyDataSetChanged()
+                        return true
+                    }
+                }
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                translationBlockViewModel.delete(adapter.currentList[viewHolder.adapterPosition])
+                Toast.makeText(this@MainActivity, "Block deleted", Toast.LENGTH_SHORT).show()
+            }
+        }).attachToRecyclerView(recyclerView)
+
+        // Init BlockService language to French (first item of Spinner)
         val service = BlockService(this)
-        selectedSpokenLanguage = LocaleUtils.stringToLocale("French")
-        speechToText = service.speechToText(selectedSpokenLanguage)
-
+        selectedSpokenLanguage = "fr"
+        speechToText = service.speechToText(LocaleUtils.stringToLocale(selectedSpokenLanguage))
+        textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
 
         // Listeners
         selectSpokenLanguageSpinner?.onItemSelectedListener =
@@ -82,20 +176,24 @@ class MainActivity : AppCompatActivity() {
                     id: Long
                 ) {
                     selectedSpokenLanguage =
-                        LocaleUtils.stringToLocale(selectSpokenLanguageSpinner.selectedItem.toString())
-                    speechToText = service.speechToText(selectedSpokenLanguage)
+                        LocaleUtils.reduceLanguage(selectSpokenLanguageSpinner.selectedItem.toString())
+                    speechToText =
+                        service.speechToText(
+                            LocaleUtils.stringToLocale(
+                                selectedSpokenLanguage
+                            )
+                        )
                     Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
                 }
             }
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                Timber.d("startTalkButton ACTION_DOWN")
-
                 pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
                 sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
                 sentencePronounced.text = "" // Delete old SpeechToText
                 sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
+                sentencePronouncedListenButton.visibility = View.INVISIBLE
 
                 v.performClick()
                 Snackbar.make(startTalkButton, "Listening...", Snackbar.LENGTH_SHORT).show()
@@ -106,25 +204,47 @@ class MainActivity : AppCompatActivity() {
                                 sentencePronouncedSpinner.visibility = View.INVISIBLE
                                 sentencePronouncedTitle.visibility = View.VISIBLE
                                 sentencePronounced.visibility = View.VISIBLE
-                                sentencePronounced.text = text.capitalize(selectedSpokenLanguage)
-                                val localeItemList = localeAdapter.getList()
-                                // build the flow
+                                sentencePronouncedListenButton.visibility = View.VISIBLE
+                                sentencePronounced.text = text.capitalize(
+                                    LocaleUtils.stringToLocale(selectedSpokenLanguage)
+                                )
+
+                                // EDIT LE TTS
+                                sentencePronouncedListenButton.setOnClickListener {
+                                    textToSpeech.speak(text)
+                                }
+
+                                Timber.d("=> ${adapter.currentList}")
                                 val localeItemFlow = flow {
-                                    localeItemList.forEach { emit(it) }
+                                    adapter.currentList.forEach {
+                                        emit(it)
+                                    }
                                 }
                                 // consume the flow (Sequentially)
-                                var count = 0
-                                localeItemFlow.map { localeItem ->
-                                    val index = localeAdapter.getList().indexOf(localeItem)
-                                    Timber.d("Started $localeItem (#$index)")
-                                    var previousItem = LocaleItem(selectedSpokenLanguage, text)
-                                    if (index != 0) previousItem = localeItemList[index - 1]
-                                    service.translator(previousItem.locale, localeItem.locale)
-                                        .translate(previousItem.translatedText).await()
+                                var itemCounter = 0
+                                localeItemFlow.map { translationBlock ->
+                                    val index = adapter.currentList.indexOf(translationBlock)
+                                    Timber.d("Started $translationBlock (#$index)")
+                                    if (index == 0) {
+                                        service.translator(
+                                            LocaleUtils.stringToLocale(selectedSpokenLanguage),
+                                            LocaleUtils.stringToLocale(translationBlock.language)
+                                        ).translateAsync(text).await()
+                                    } else {
+                                        val previousItem = adapter.currentList[index - 1]
+                                        service.translator(
+                                            LocaleUtils.stringToLocale(previousItem.language),
+                                            LocaleUtils.stringToLocale(translationBlock.language)
+                                        ).translateAsync(previousItem.translation).await()
+                                    }
                                 }.onEach { res ->
-                                    localeItemList[count].translatedText = res
-                                    localeAdapter.notifyDataSetChanged()
-                                    count++
+                                    Timber.d("Updating item #$itemCounter")
+                                    val currentItem = adapter.currentList[itemCounter]
+                                    currentItem.translation = res.capitalize(
+                                        LocaleUtils.stringToLocale(currentItem.language)
+                                    )
+                                    translationBlockViewModel.update(currentItem)
+                                    itemCounter++
                                 }.collect {
                                     Timber.d("Translated $it")
                                 }
@@ -149,77 +269,29 @@ class MainActivity : AppCompatActivity() {
         }
 
         addLanguageButton.setOnClickListener {
-            Timber.d("addLanguageButton CLICKED")
+            Timber.d("Opened AddTranslationBlockDialog")
             MaterialDialog(this).title(R.string.select_language_to_translate_dialog_title).show {
-                listItemsSingleChoice(R.array.languages) { _, _, text ->
-                    Timber.d("Selected language '$text'")
-
-                    localeAdapter.addItem(
-                        LocaleItem(
-                            LocaleUtils.stringToLocale(text.toString()),
+                listItemsSingleChoice(R.array.languages) { _, _, selectedLanguage ->
+                    Timber.d("Selected language '$selectedLanguage'")
+                    var index = 0
+                    if (translationBlocksCounter != 0) index = translationBlocksMaxPos + 1
+                    translationBlockViewModel.insert(
+                        TranslationBlock(
+                            index,
+                            LocaleUtils.reduceLanguage(selectedLanguage as String),
                             ""
-                        ), localeAdapter.itemCount
+                        )
                     )
                 }
             }
         }
-    }
 
-    private fun addDataSet() {
-        val data = DataSource.createDataSet()
-        localeAdapter.submitList(data)
+
     }
 
     override fun onDestroy() {
         speechToText.close()
         super.onDestroy()
-    }
-
-    /**
-     * LocaleRecyclerView initialisation
-     */
-    private fun initRecyclerView() {
-        localeRecyclerView.apply {
-            localeAdapter = LocaleRecyclerAdapter()
-            localeRecyclerView.adapter = localeAdapter
-            localeRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-        }
-    }
-
-    private fun setOneTimeWorkRequest(
-        pos: Int,
-        sentenceToTranslate: String,
-        from: Locale,
-        to: Locale
-    ) {
-        val workManager = WorkManager.getInstance(applicationContext)
-        // val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-        val data = Data.Builder()
-            .putString("sentenceToTranslate", sentenceToTranslate)
-            .putString("from", from.language)
-            .putString("to", to.language)
-            .build()
-        val oneTimeWorkRequest = OneTimeWorkRequest.Builder(TranslateWorker::class.java)
-            //.setConstraints(constraints)
-            .setInputData(data)
-            .build()
-        workManager.beginUniqueWork(
-            "TranslationJob",
-            ExistingWorkPolicy.REPLACE,
-            oneTimeWorkRequest
-        ).enqueue()
-        workManager.getWorkInfoByIdLiveData(oneTimeWorkRequest.id)
-            .observe(this, {
-                if (it.state.isFinished) {
-                    localeAdapter.getList()[pos].translatedText =
-                        it.outputData.getString("sentenceTranslated").toString()
-                    Timber.d(
-                        "workManagerSortie = %s",
-                        it.outputData.getString("sentenceTranslated").toString()
-                    )
-                    localeAdapter.notifyDataSetChanged()
-                }
-            })
     }
 
     /**

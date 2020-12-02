@@ -21,9 +21,11 @@ import com.google.android.material.snackbar.Snackbar
 import fr.enssat.babelblock.delvoye_legal.models.LocaleItem
 import fr.enssat.babelblock.delvoye_legal.tools.BlockService
 import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
+import fr.enssat.babelblock.delvoye_legal.tools.TextToSpeechTool
 import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
 import fr.enssat.babelblock.delvoye_legal.workers.TranslateWorker
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.layout_locale_list_item.*
 import timber.log.Timber
 import java.util.*
 
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var speechToText: SpeechToTextTool
     private lateinit var selectedSpokenLanguage: Locale
     private lateinit var localeAdapter: LocaleRecyclerAdapter
+    private lateinit var speaker: TextToSpeechTool
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,10 +61,15 @@ class MainActivity : AppCompatActivity() {
         initRecyclerView()
         addDataSet()
 
+
+
         // Init STT language to French (first item of Spinner)
         val service = BlockService(this)
         selectedSpokenLanguage = LocaleUtils.stringToLocale("French")
         speechToText = service.speechToText(selectedSpokenLanguage)
+
+        // Init TTS
+        speaker = service.textToSpeech()
 
 
         // Listeners
@@ -83,6 +91,11 @@ class MainActivity : AppCompatActivity() {
                     Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
                 }
             }
+
+        textToSpeech_locale_button.setOnClickListener{
+            val text = chain_translation_text.text.toString()
+            speaker.speak(text)
+        }
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -166,6 +179,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         speechToText.close()
+        speaker.close()
         super.onDestroy()
     }
 

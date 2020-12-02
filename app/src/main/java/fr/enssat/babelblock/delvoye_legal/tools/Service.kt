@@ -28,14 +28,18 @@ interface SpeechToTextTool {
 }
 
 class BlockService(private val context: Context) {
-    fun textToSpeech(from: Locale?): TextToSpeechTool {
-        return TextToSpeechHandler(context.applicationContext, from)
-    }
+    fun textToSpeech():TextToSpeechTool {
+        val locale = Locale.getDefault()
+        return TextToSpeechHandler(context.applicationContext, locale)}
+
 
     fun translator(from: Locale, to: Locale): TranslationTool =
         TranslatorHandler(context.applicationContext, from, to)
 
     fun speechToText(from: Locale?): SpeechToTextTool =
         SpeechRecognizerHandler(context.applicationContext, from)
+
+
+
 }
 

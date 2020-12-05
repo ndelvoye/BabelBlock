@@ -15,7 +15,7 @@ class SpeechRecognizerHandler(context: Context, locale: Locale?) : SpeechToTextT
     init {
         if (SpeechRecognizer.isRecognitionAvailable(context).not()) {
             Timber.e("Sorry but Speech recognizer is not available on this device")
-            throw IllegalStateException()
+            //throw IllegalStateException()
         }
     }
 

@@ -28,6 +28,7 @@ import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
 import fr.enssat.babelblock.delvoye_legal.Utils.LocaleUtils
 import fr.enssat.babelblock.delvoye_legal.ViewModels.TranslationBlockViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.layout_locale_list_item.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -211,6 +212,13 @@ class MainActivity : AppCompatActivity() {
 
                                 // EDIT LE TTS
                                 sentencePronouncedListenButton.setOnClickListener {
+                                    //textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
+                                    textToSpeech.speak(text)
+                                }
+
+                                //Gerance TTS
+                                listen_button.setOnClickListener{
+                                    textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
                                     textToSpeech.speak(text)
                                 }
 
@@ -267,6 +275,8 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
+
+
 
         addLanguageButton.setOnClickListener {
             Timber.d("Opened AddTranslationBlockDialog")

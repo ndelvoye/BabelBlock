@@ -215,12 +215,7 @@ class MainActivity : AppCompatActivity() {
                                     //textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
                                     textToSpeech.speak(text)
                                 }
-
-                                //Gerance TTS
-                                listen_button.setOnClickListener{
-                                    textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
-                                    textToSpeech.speak(text)
-                                }
+                                
 
                                 Timber.d("=> ${adapter.currentList}")
                                 val localeItemFlow = flow {

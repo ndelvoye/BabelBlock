@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.R
 import fr.enssat.babelblock.delvoye_legal.Tools.BlockService
 import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
@@ -37,6 +38,9 @@ class TranslationBlocksAdapter() :
             itemView.findViewById(R.id.translation_block_text)
         private val listenBtn: Button = itemView.findViewById(R.id.listen_button)
         private val editBtn: Button = itemView.findViewById(R.id.edit_button)
+        val service = BlockService(itemView.context as MainActivity)
+        lateinit var speaker: TextToSpeechTool
+
 
         fun bind(translationBlock: TranslationBlock) {
             flagImg.setImageResource(
@@ -46,9 +50,11 @@ class TranslationBlocksAdapter() :
             )
             translation.text = translationBlock.translation
             listenBtn.setOnClickListener {
-                BlockService(itemView.context)
+               /* BlockService(itemView.context)
                     .textToSpeech(LocaleUtils.stringToLocale(translationBlock.language))
-                    .speak(translationBlock.translation)
+                    .speak(translationBlock.translation)*/
+                speaker = service.textToSpeech(LocaleUtils.stringToLocale(translationBlock.language))
+                speaker.speak(translationBlock.translation)
             }
             editBtn.setOnClickListener {
                 MaterialDialog(itemView.context).title(R.string.edit_language_dialog_title).show {

@@ -1,6 +1,6 @@
 package fr.enssat.babelblock.delvoye_legal.Tools
 
-import android.content.Context
+import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.SpeechRecognizerHandler
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.TextToSpeechHandler
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.TranslatorHandler
@@ -28,7 +28,7 @@ interface SpeechToTextTool {
     fun close()
 }
 
-class BlockService(private val context: Context) {
+class BlockService(private val context: MainActivity) {
     fun textToSpeech(from: Locale?): TextToSpeechTool {
         return TextToSpeechHandler(context.applicationContext, from)
     }

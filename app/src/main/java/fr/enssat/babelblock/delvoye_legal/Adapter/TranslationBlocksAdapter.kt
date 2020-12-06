@@ -12,15 +12,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.R
 import fr.enssat.babelblock.delvoye_legal.Tools.BlockService
-import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
 import fr.enssat.babelblock.delvoye_legal.Utils.LocaleUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class TranslationBlocksAdapter() :
-    ListAdapter<TranslationBlock, TranslationBlocksAdapter.TranslationBlockViewHolder>(
-        TranslationBlocksComparator()
-    ) {
+class TranslationBlocksAdapter :
+        ListAdapter<TranslationBlock, TranslationBlocksAdapter.TranslationBlockViewHolder>(
+                TranslationBlocksComparator()
+        ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TranslationBlockViewHolder {
         return TranslationBlockViewHolder.create(parent)
     }
@@ -32,29 +35,31 @@ class TranslationBlocksAdapter() :
 
     class TranslationBlockViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val flagImg: ImageView =
-            itemView.findViewById(R.id.translation_block_flag)
+                itemView.findViewById(R.id.translation_block_flag)
         private val translation: TextView =
-            itemView.findViewById(R.id.translation_block_text)
+                itemView.findViewById(R.id.translation_block_text)
         private val listenBtn: Button = itemView.findViewById(R.id.listen_button)
         private val editBtn: Button = itemView.findViewById(R.id.edit_button)
 
         fun bind(translationBlock: TranslationBlock) {
             flagImg.setImageResource(
-                LocaleUtils.stringToFlagInt(
-                    translationBlock.language
-                )
+                    LocaleUtils.stringToFlagInt(
+                            translationBlock.language
+                    )
             )
             translation.text = translationBlock.translation
             listenBtn.setOnClickListener {
-                BlockService(itemView.context)
-                    .textToSpeech(LocaleUtils.stringToLocale(translationBlock.language))
-                    .speak(translationBlock.translation)
+                CoroutineScope(Dispatchers.Default).launch {
+                    BlockService(itemView.context as MainActivity)
+                            .textToSpeech(LocaleUtils.stringToLocale(translationBlock.language))
+                            .speak(itemView.context as MainActivity, translationBlock.translation)
+                }
             }
             editBtn.setOnClickListener {
                 MaterialDialog(itemView.context).title(R.string.edit_language_dialog_title).show {
-                    listItemsSingleChoice(R.array.languages) { _, _, selectedLanguage->
+                    listItemsSingleChoice(R.array.languages) { _, _, selectedLanguage ->
                         translationBlock.language =
-                            LocaleUtils.reduceLanguage(selectedLanguage as String)
+                                LocaleUtils.reduceLanguage(selectedLanguage as String)
                     }
                 }
             }
@@ -63,7 +68,7 @@ class TranslationBlocksAdapter() :
         companion object {
             fun create(parent: ViewGroup): TranslationBlockViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.layout_locale_list_item, parent, false)
+                        .inflate(R.layout.layout_locale_list_item, parent, false)
                 return TranslationBlockViewHolder(view)
             }
         }
@@ -71,15 +76,15 @@ class TranslationBlocksAdapter() :
 
     class TranslationBlocksComparator : DiffUtil.ItemCallback<TranslationBlock>() {
         override fun areItemsTheSame(
-            oldItem: TranslationBlock,
-            newItem: TranslationBlock
+                oldItem: TranslationBlock,
+                newItem: TranslationBlock
         ): Boolean {
             return oldItem === newItem
         }
 
         override fun areContentsTheSame(
-            oldItem: TranslationBlock,
-            newItem: TranslationBlock
+                oldItem: TranslationBlock,
+                newItem: TranslationBlock
         ): Boolean {
             return oldItem.position == newItem.position
         }

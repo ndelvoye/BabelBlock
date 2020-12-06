@@ -4,13 +4,12 @@ import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.SpeechRecognizerHandler
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.TextToSpeechHandler
 import fr.enssat.babelblock.delvoye_legal.Tools.impl.TranslatorHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import java.util.Locale
 
 interface TextToSpeechTool {
-    fun speak(text: String)
-    fun stop()
-    fun close()
+    suspend fun speak(context: MainActivity, text: String)
 }
 
 interface TranslationTool {
@@ -30,7 +29,7 @@ interface SpeechToTextTool {
 
 class BlockService(private val context: MainActivity) {
     fun textToSpeech(from: Locale?): TextToSpeechTool {
-        return TextToSpeechHandler(context.applicationContext, from)
+        return TextToSpeechHandler(from)
     }
 
     fun translator(from: Locale, to: Locale): TranslationTool =

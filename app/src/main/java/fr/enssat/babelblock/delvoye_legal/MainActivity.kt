@@ -212,8 +212,9 @@ class MainActivity : AppCompatActivity() {
 
                                 // EDIT LE TTS
                                 sentencePronouncedListenButton.setOnClickListener {
-                                    //textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(selectedSpokenLanguage))
-                                    textToSpeech.speak(text)
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        textToSpeech.speak(this@MainActivity, text)
+                                    }
                                 }
                                 
 

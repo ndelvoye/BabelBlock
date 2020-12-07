@@ -1,8 +1,8 @@
 package fr.enssat.babelblock.delvoye_legal
 
 import android.app.Application
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlockRepository
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlockRoomDatabase
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlockRepository
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlockRoomDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 

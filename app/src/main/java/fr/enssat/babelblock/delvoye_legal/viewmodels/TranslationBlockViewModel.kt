@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlockRepository
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlockRepository
 import kotlinx.coroutines.launch
 import timber.log.Timber
 

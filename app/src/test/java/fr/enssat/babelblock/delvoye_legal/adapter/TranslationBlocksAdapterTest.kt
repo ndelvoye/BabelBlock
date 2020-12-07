@@ -1,4 +1,4 @@
-package fr.enssat.babelblock.delvoye_legal.Adapter
+package fr.enssat.babelblock.delvoye_legal.adapter
 
 import junit.framework.TestCase
 

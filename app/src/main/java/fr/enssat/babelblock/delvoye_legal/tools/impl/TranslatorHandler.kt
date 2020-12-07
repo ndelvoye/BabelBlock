@@ -1,8 +1,8 @@
-package fr.enssat.babelblock.delvoye_legal.Tools.impl
+package fr.enssat.babelblock.delvoye_legal.tools.impl
 
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
-import fr.enssat.babelblock.delvoye_legal.Tools.TranslationTool
+import fr.enssat.babelblock.delvoye_legal.tools.TranslationTool
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import timber.log.Timber

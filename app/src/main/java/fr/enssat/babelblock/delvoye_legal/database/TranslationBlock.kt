@@ -1,4 +1,4 @@
-package fr.enssat.babelblock.delvoye_legal.Database
+package fr.enssat.babelblock.delvoye_legal.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

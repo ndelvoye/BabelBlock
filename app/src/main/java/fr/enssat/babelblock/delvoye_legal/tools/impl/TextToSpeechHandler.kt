@@ -1,10 +1,9 @@
-package fr.enssat.babelblock.delvoye_legal.Tools.impl
+package fr.enssat.babelblock.delvoye_legal.tools.impl
 
 import android.os.Build
 import android.speech.tts.TextToSpeech
 import fr.enssat.babelblock.delvoye_legal.MainActivity
-import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
-import kotlinx.coroutines.CoroutineScope
+import fr.enssat.babelblock.delvoye_legal.tools.TextToSpeechTool
 import timber.log.Timber
 import java.util.*
 import kotlin.coroutines.suspendCoroutine

@@ -1,4 +1,4 @@
-package fr.enssat.babelblock.delvoye_legal.Utils
+package fr.enssat.babelblock.delvoye_legal.utils
 
 import fr.enssat.babelblock.delvoye_legal.R
 import java.util.*

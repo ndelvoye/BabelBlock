@@ -1,4 +1,4 @@
-package fr.enssat.babelblock.delvoye_legal.Adapter
+package fr.enssat.babelblock.delvoye_legal.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlock
 import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.R
-import fr.enssat.babelblock.delvoye_legal.Tools.BlockService
-import fr.enssat.babelblock.delvoye_legal.Utils.LocaleUtils
+import fr.enssat.babelblock.delvoye_legal.tools.BlockService
+import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

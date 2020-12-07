@@ -1,9 +1,9 @@
-package fr.enssat.babelblock.delvoye_legal.Tools
+package fr.enssat.babelblock.delvoye_legal.tools
 
 import fr.enssat.babelblock.delvoye_legal.MainActivity
-import fr.enssat.babelblock.delvoye_legal.Tools.impl.SpeechRecognizerHandler
-import fr.enssat.babelblock.delvoye_legal.Tools.impl.TextToSpeechHandler
-import fr.enssat.babelblock.delvoye_legal.Tools.impl.TranslatorHandler
+import fr.enssat.babelblock.delvoye_legal.tools.impl.SpeechRecognizerHandler
+import fr.enssat.babelblock.delvoye_legal.tools.impl.TextToSpeechHandler
+import fr.enssat.babelblock.delvoye_legal.tools.impl.TranslatorHandler
 import kotlinx.coroutines.Deferred
 import java.util.*
 

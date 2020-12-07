@@ -1,4 +1,4 @@
-package fr.enssat.babelblock.delvoye_legal.ViewModels
+package fr.enssat.babelblock.delvoye_legal.viewmodels
 
 import junit.framework.TestCase
 

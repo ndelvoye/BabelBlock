@@ -20,13 +20,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.nl.translate.TranslateRemoteModel
-import fr.enssat.babelblock.delvoye_legal.Adapter.TranslationBlocksAdapter
-import fr.enssat.babelblock.delvoye_legal.Database.TranslationBlock
-import fr.enssat.babelblock.delvoye_legal.Tools.BlockService
-import fr.enssat.babelblock.delvoye_legal.Tools.SpeechToTextTool
-import fr.enssat.babelblock.delvoye_legal.Tools.TextToSpeechTool
-import fr.enssat.babelblock.delvoye_legal.Utils.LocaleUtils
-import fr.enssat.babelblock.delvoye_legal.ViewModels.TranslationBlockViewModelFactory
+import fr.enssat.babelblock.delvoye_legal.adapter.TranslationBlocksAdapter
+import fr.enssat.babelblock.delvoye_legal.database.TranslationBlock
+import fr.enssat.babelblock.delvoye_legal.tools.BlockService
+import fr.enssat.babelblock.delvoye_legal.tools.SpeechToTextTool
+import fr.enssat.babelblock.delvoye_legal.tools.TextToSpeechTool
+import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
+import fr.enssat.babelblock.delvoye_legal.viewmodels.TranslationBlockViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_locale_list_item.*
 import kotlinx.coroutines.CoroutineScope
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
+                != PackageManager.PERMISSION_GRANTED
         ) {
             checkPermission()
         }
@@ -74,26 +74,26 @@ class MainActivity : AppCompatActivity() {
         var count = 0
         val modelManager = RemoteModelManager.getInstance()
         modelManager
-            .getDownloadedModels(TranslateRemoteModel::class.java)
-            .addOnSuccessListener { models ->
-                LocaleUtils.getAvailableLocales().forEach {
-                    if (!models.contains(TranslateRemoteModel.Builder(it.language).build())) {
-                        modelManager.download(
-                            TranslateRemoteModel.Builder(it.language).build(),
-                            DownloadConditions.Builder()
-                                .requireWifi()
-                                .build()
-                        ).addOnSuccessListener {
+                .getDownloadedModels(TranslateRemoteModel::class.java)
+                .addOnSuccessListener { models ->
+                    LocaleUtils.getAvailableLocales().forEach {
+                        if (!models.contains(TranslateRemoteModel.Builder(it.language).build())) {
+                            modelManager.download(
+                                    TranslateRemoteModel.Builder(it.language).build(),
+                                    DownloadConditions.Builder()
+                                            .requireWifi()
+                                            .build()
+                            ).addOnSuccessListener {
+                                count++
+                            }
+                        } else {
                             count++
                         }
-                    } else {
-                        count++
                     }
                 }
-            }
-            .addOnFailureListener {
-                // Error.
-            }
+                .addOnFailureListener {
+                    // Error.
+                }
 
         // RECYCLER VIEW & ADAPTER
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
@@ -116,12 +116,12 @@ class MainActivity : AppCompatActivity() {
 
         // Drag & drop + Delete by Swiping (UI)
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
             override fun getMovementFlags(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder
             ): Int {
                 val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
                 val swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
@@ -129,9 +129,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
             ): Boolean {
                 val from = viewHolder.adapterPosition
                 val to = target.adapterPosition
@@ -165,31 +165,31 @@ class MainActivity : AppCompatActivity() {
 
         // Listeners
         selectSpokenLanguageSpinner?.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    // Do nothing
-                }
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        // Do nothing
+                    }
 
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    selectedSpokenLanguage =
-                        LocaleUtils.reduceLanguage(selectSpokenLanguageSpinner.selectedItem.toString())
-                    speechToText =
-                        service.speechToText(
-                            LocaleUtils.stringToLocale(
+                    override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long
+                    ) {
+                        selectedSpokenLanguage =
+                                LocaleUtils.reduceLanguage(selectSpokenLanguageSpinner.selectedItem.toString())
+                        speechToText =
+                                service.speechToText(
+                                        LocaleUtils.stringToLocale(
+                                                selectedSpokenLanguage
+                                        )
+                                )
+                        textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(
                                 selectedSpokenLanguage
-                            )
-                        )
-                    textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(
-                            selectedSpokenLanguage
-                    ))
-                    Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
+                        ))
+                        Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
+                    }
                 }
-            }
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity() {
                                 sentencePronounced.visibility = View.VISIBLE
                                 sentencePronouncedListenButton.visibility = View.VISIBLE
                                 sentencePronounced.text = text.capitalize(
-                                    LocaleUtils.stringToLocale(selectedSpokenLanguage)
+                                        LocaleUtils.stringToLocale(selectedSpokenLanguage)
                                 )
 
                                 // EDIT LE TTS
@@ -219,7 +219,6 @@ class MainActivity : AppCompatActivity() {
                                         textToSpeech.speak(this@MainActivity, text)
                                     }
                                 }
-                                
 
                                 Timber.d("=> ${adapter.currentList}")
                                 val localeItemFlow = flow {
@@ -234,21 +233,21 @@ class MainActivity : AppCompatActivity() {
                                     Timber.d("Started $translationBlock (#$index)")
                                     if (index == 0) {
                                         service.translator(
-                                            LocaleUtils.stringToLocale(selectedSpokenLanguage),
-                                            LocaleUtils.stringToLocale(translationBlock.language)
+                                                LocaleUtils.stringToLocale(selectedSpokenLanguage),
+                                                LocaleUtils.stringToLocale(translationBlock.language)
                                         ).translateAsync(text).await()
                                     } else {
                                         val previousItem = adapter.currentList[index - 1]
                                         service.translator(
-                                            LocaleUtils.stringToLocale(previousItem.language),
-                                            LocaleUtils.stringToLocale(translationBlock.language)
+                                                LocaleUtils.stringToLocale(previousItem.language),
+                                                LocaleUtils.stringToLocale(translationBlock.language)
                                         ).translateAsync(previousItem.translation).await()
                                     }
                                 }.onEach { res ->
                                     Timber.d("Updating item #$itemCounter")
                                     val currentItem = adapter.currentList[itemCounter]
                                     currentItem.translation = res.capitalize(
-                                        LocaleUtils.stringToLocale(currentItem.language)
+                                            LocaleUtils.stringToLocale(currentItem.language)
                                     )
                                     translationBlockViewModel.update(currentItem)
                                     itemCounter++
@@ -261,9 +260,9 @@ class MainActivity : AppCompatActivity() {
 
                     override fun onError() {
                         Snackbar.make(
-                            startTalkButton,
-                            "An error occurred... Try again !",
-                            Snackbar.LENGTH_SHORT
+                                startTalkButton,
+                                "An error occurred... Try again !",
+                                Snackbar.LENGTH_SHORT
                         ).show()
                         sentencePronouncedSpinner.visibility = View.INVISIBLE
                         sentencePronouncedTitle.visibility = View.INVISIBLE
@@ -285,11 +284,11 @@ class MainActivity : AppCompatActivity() {
                     var index = 0
                     if (translationBlocksCounter != 0) index = translationBlocksMaxPos + 1
                     translationBlockViewModel.insert(
-                        TranslationBlock(
-                            index,
-                            LocaleUtils.reduceLanguage(selectedLanguage as String),
-                            ""
-                        )
+                            TranslationBlock(
+                                    index,
+                                    LocaleUtils.reduceLanguage(selectedLanguage as String),
+                                    ""
+                            )
                     )
                 }
             }
@@ -308,9 +307,9 @@ class MainActivity : AppCompatActivity() {
      */
     private fun checkPermission() {
         ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            recordAudioRequestCode
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                recordAudioRequestCode
         )
     }
 
@@ -318,9 +317,9 @@ class MainActivity : AppCompatActivity() {
      * Request Permissions
      */
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String?>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<String?>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == recordAudioRequestCode && grantResults.isNotEmpty()) {

@@ -184,6 +184,9 @@ class MainActivity : AppCompatActivity() {
                                 selectedSpokenLanguage
                             )
                         )
+                    textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(
+                            selectedSpokenLanguage
+                    ))
                     Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
                 }
             }

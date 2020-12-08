@@ -60,6 +60,16 @@ class TranslationBlocksAdapter :
                     listItemsSingleChoice(R.array.languages) { _, _, selectedLanguage ->
                         translationBlock.language =
                                 LocaleUtils.reduceLanguage(selectedLanguage as String)
+                        flagImg.setImageResource(
+                                LocaleUtils.stringToFlagInt(
+                                        translationBlock.language
+                                )
+                        )
+                        translation.text = translationBlock.translation
+
+
+
+                        /**/
                     }
                 }
             }

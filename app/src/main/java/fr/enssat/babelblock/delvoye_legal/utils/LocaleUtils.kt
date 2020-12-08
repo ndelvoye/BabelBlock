@@ -57,4 +57,18 @@ object LocaleUtils {
             else -> throw Exception("Locale not recognized : $s")
         }
     }
+
+    @JvmStatic
+    fun getIndiceFromReducedLanguage(s: String): Int {
+        return when (s) {
+            "fr" -> 0
+            "en" -> 1
+            "es" -> 2
+            "zh" -> 3
+            "it" -> 4
+            "ja" -> 5
+            "de" -> 6
+            else -> throw Exception("Locale not recognized : $s")
+        }
+    }
 }

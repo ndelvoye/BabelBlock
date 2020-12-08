@@ -14,13 +14,14 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import fr.enssat.babelblock.delvoye_legal.database.TranslationBlock
 import fr.enssat.babelblock.delvoye_legal.MainActivity
 import fr.enssat.babelblock.delvoye_legal.R
+import fr.enssat.babelblock.delvoye_legal.TranslationBlockViewModel
 import fr.enssat.babelblock.delvoye_legal.tools.BlockService
 import fr.enssat.babelblock.delvoye_legal.utils.LocaleUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class TranslationBlocksAdapter :
+class TranslationBlocksAdapter(private val translationBlockViewModel: TranslationBlockViewModel) :
         ListAdapter<TranslationBlock, TranslationBlocksAdapter.TranslationBlockViewHolder>(
                 TranslationBlocksComparator()
         ) {
@@ -30,7 +31,12 @@ class TranslationBlocksAdapter :
 
     override fun onBindViewHolder(holder: TranslationBlockViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current)
+        holder.bind(current) { editedLanguage ->
+            if (editedLanguage != "") {
+                current.language = editedLanguage
+                translationBlockViewModel.update(current)
+            }
+        }
     }
 
     class TranslationBlockViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -41,7 +47,7 @@ class TranslationBlocksAdapter :
         private val listenBtn: Button = itemView.findViewById(R.id.listen_button)
         private val editBtn: Button = itemView.findViewById(R.id.edit_button)
 
-        fun bind(translationBlock: TranslationBlock) {
+        fun bind(translationBlock: TranslationBlock, callback: (String) -> Unit) {
             flagImg.setImageResource(
                     LocaleUtils.stringToFlagInt(
                             translationBlock.language
@@ -57,19 +63,10 @@ class TranslationBlocksAdapter :
             }
             editBtn.setOnClickListener {
                 MaterialDialog(itemView.context).title(R.string.edit_language_dialog_title).show {
-                    listItemsSingleChoice(R.array.languages) { _, _, selectedLanguage ->
+                    listItemsSingleChoice(R.array.languages, null, null, LocaleUtils.getIndiceFromReducedLanguage(translationBlock.language)) { _, _, selectedLanguage ->
                         translationBlock.language =
                                 LocaleUtils.reduceLanguage(selectedLanguage as String)
-                        flagImg.setImageResource(
-                                LocaleUtils.stringToFlagInt(
-                                        translationBlock.language
-                                )
-                        )
-                        translation.text = translationBlock.translation
-
-
-
-                        /**/
+                        callback.invoke(LocaleUtils.reduceLanguage(selectedLanguage))
                     }
                 }
             }

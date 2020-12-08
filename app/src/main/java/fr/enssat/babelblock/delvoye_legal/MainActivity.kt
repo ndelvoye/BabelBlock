@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
 
         // RECYCLER VIEW & ADAPTER
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
-        val adapter = TranslationBlocksAdapter()
+        val adapter = TranslationBlocksAdapter(translationBlockViewModel)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 

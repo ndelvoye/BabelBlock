@@ -4,6 +4,7 @@
     <string name="select_language_to_translate_dialog_title">Select the language of your new TranslationBlock</string>
     <string name="edit_language_dialog_title">Edit language of this TranslationBlock</string>
     <string name="press_the_button">Press the microphone button to start a translation.</string>
+    <string name="press_the_text_button">Press the pen button to write a translation.</string>
     <string name="sentence_pronounced_title">You said:</string>
     <string name="begin_translation_button_content_description">STT button</string>
     <string name="add_language_button_content_description">Add language button</string>
@@ -12,4 +13,6 @@
     <string name="language_flag">Language flag</string>
     <string name="edit_button_description">Edit button</string>
     <string name="move_button_description">Move button</string>
+    <string name="write_dialog_title">Write text to translate :</string>
+    <string name="submit">Submit</string>
 </resources>

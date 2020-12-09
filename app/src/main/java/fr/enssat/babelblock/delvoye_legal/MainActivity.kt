@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.common.model.DownloadConditions
@@ -274,6 +275,65 @@ class MainActivity : AppCompatActivity() {
             false
         }
 
+
+        startWriteButton.setOnClickListener {
+            Timber.d("Opened Write Button dialog")
+            MaterialDialog(this).title(R.string.write_dialog_title).show {
+                input(){dialog, text ->
+                    // Text submitted with the action button
+                    CoroutineScope(Dispatchers.Main).launch {
+                        var textScope = ""+ text.toString()
+                        /*sentencePronounced.text = textScope.capitalize(
+                                LocaleUtils.stringToLocale(selectedSpokenLanguage)
+                        )*/
+
+                        // EDIT LE TTS
+                        /*
+                        sentencePronouncedListenButton.setOnClickListener {
+                            CoroutineScope(Dispatchers.Default).launch {
+                                textToSpeech.speak(this@MainActivity, textScope)
+                            }
+                        }*/
+
+                        Timber.d("=> ${adapter.currentList}")
+                        val localeItemFlow = flow {
+                            adapter.currentList.forEach {
+                                emit(it)
+                            }
+                        }
+                        // consume the flow (Sequentially)
+                        var itemCounter = 0
+                        localeItemFlow.map { translationBlock ->
+                            val index = adapter.currentList.indexOf(translationBlock)
+                            Timber.d("Started $translationBlock (#$index)")
+                            if (index == 0) {
+                                service.translator(
+                                        LocaleUtils.stringToLocale(selectedSpokenLanguage),
+                                        LocaleUtils.stringToLocale(translationBlock.language)
+                                ).translateAsync(textScope).await()
+                            } else {
+                                val previousItem = adapter.currentList[index - 1]
+                                service.translator(
+                                        LocaleUtils.stringToLocale(previousItem.language),
+                                        LocaleUtils.stringToLocale(translationBlock.language)
+                                ).translateAsync(previousItem.translation).await()
+                            }
+                        }.onEach { res ->
+                            Timber.d("Updating item #$itemCounter")
+                            val currentItem = adapter.currentList[itemCounter]
+                            currentItem.translation = res.capitalize(
+                                    LocaleUtils.stringToLocale(currentItem.language)
+                            )
+                            translationBlockViewModel.update(currentItem)
+                            itemCounter++
+                        }.collect {
+                            Timber.d("Translated $it")
+                        }
+                    }
+                }
+                positiveButton(R.string.submit)
+            }
+        }
 
 
         addLanguageButton.setOnClickListener {

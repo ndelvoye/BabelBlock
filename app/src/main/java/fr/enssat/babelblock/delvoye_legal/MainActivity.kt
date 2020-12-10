@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.google.android.material.snackbar.Snackbar
@@ -195,6 +197,7 @@ class MainActivity : AppCompatActivity() {
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
+                pressTheTextButton.visibility = View.INVISIBLE
                 sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
                 sentencePronounced.text = "" // Delete old SpeechToText
                 sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
@@ -269,6 +272,7 @@ class MainActivity : AppCompatActivity() {
                         sentencePronouncedTitle.visibility = View.INVISIBLE
                         sentencePronounced.visibility = View.INVISIBLE
                         pressTheButton.visibility = View.VISIBLE
+                        pressTheTextButton.visibility = View.VISIBLE
                     }
                 })
             }
@@ -278,14 +282,25 @@ class MainActivity : AppCompatActivity() {
 
         startWriteButton.setOnClickListener {
             Timber.d("Opened Write Button dialog")
-            MaterialDialog(this).title(R.string.write_dialog_title).show {
+            pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
+            pressTheTextButton.visibility = View.INVISIBLE
+            sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
+            sentencePronounced.text = "" // Delete old SpeechToText
+            sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
+            sentencePronouncedListenButton.visibility = View.INVISIBLE
+            val dialog: MaterialDialog =MaterialDialog(this).title(R.string.write_dialog_title).show {
                 input(){dialog, text ->
                     // Text submitted with the action button
                     CoroutineScope(Dispatchers.Main).launch {
                         var textScope = ""+ text.toString()
-                        /*sentencePronounced.text = textScope.capitalize(
+
+                        sentencePronounced.text = textScope.capitalize(
                                 LocaleUtils.stringToLocale(selectedSpokenLanguage)
-                        )*/
+                        )
+                        sentencePronouncedSpinner.visibility = View.INVISIBLE
+                        sentencePronouncedTitle.visibility = View.VISIBLE
+                        sentencePronounced.visibility = View.VISIBLE
+                        sentencePronouncedListenButton.visibility = View.VISIBLE
 
                         // EDIT LE TTS
                         /*
@@ -333,6 +348,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 positiveButton(R.string.submit)
             }
+
+
         }
 
 

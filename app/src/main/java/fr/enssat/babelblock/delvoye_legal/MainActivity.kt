@@ -198,8 +198,8 @@ class MainActivity : AppCompatActivity() {
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
-                pressTheTextButton.visibility = View.INVISIBLE
+                pressTheButton_vocal.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
+                pressTheButton_text.visibility = View.INVISIBLE
                 sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
                 sentencePronounced.text = "" // Delete old SpeechToText
                 sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
@@ -223,8 +223,8 @@ class MainActivity : AppCompatActivity() {
                         sentencePronouncedSpinner.visibility = View.INVISIBLE
                         sentencePronouncedTitle.visibility = View.INVISIBLE
                         sentencePronounced.visibility = View.INVISIBLE
-                        pressTheButton.visibility = View.VISIBLE
-                        pressTheTextButton.visibility = View.VISIBLE
+                        pressTheButton_vocal.visibility = View.VISIBLE
+                        pressTheButton_text.visibility = View.VISIBLE
                     }
                 })
             }
@@ -234,8 +234,8 @@ class MainActivity : AppCompatActivity() {
 
         startWriteButton.setOnClickListener {
             Timber.d("Opened Write Button dialog")
-            pressTheButton.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
-            pressTheTextButton.visibility = View.INVISIBLE
+            pressTheButton_vocal.visibility = View.INVISIBLE // Hide "Press the microphone button ..."
+            pressTheButton_text.visibility = View.INVISIBLE
             sentencePronouncedTitle.visibility = View.INVISIBLE // Hide "You said :"
             sentencePronounced.text = "" // Delete old SpeechToText
             sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner

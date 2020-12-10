@@ -34,7 +34,7 @@
             android:id="@+id/selectSpokenLanguageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/select_spoken_language_title"
+            android:text="@string/select_input_language_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/selectSpokenLanguageSpinner"
             app:layout_constraintStart_toStartOf="parent"
@@ -57,9 +57,11 @@
             android:layout_height="28dp"
             android:layout_marginEnd="8dp"
             android:contentDescription="@string/begin_translation_button_content_description"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/startWriteButton"
-            app:srcCompat="@drawable/ic_baseline_mic_24"
-            tools:layout_editor_absoluteY="6dp" />
+            app:layout_constraintStart_toEndOf="@+id/selectSpokenLanguageSpinner"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_baseline_mic_24" />
 
         <ImageView
             android:id="@+id/startWriteButton"
@@ -67,9 +69,11 @@
             android:layout_height="28dp"
             android:layout_marginEnd="8dp"
             android:contentDescription="@string/begin_translation_button_content_description"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/ic_baseline_edit_24"
-            tools:layout_editor_absoluteY="6dp" />
+            app:layout_constraintStart_toEndOf="@+id/startTalkButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_baseline_edit_24" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -82,25 +86,26 @@
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
         <TextView
-            android:id="@+id/pressTheButton"
+            android:id="@+id/pressTheButton_vocal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/press_the_button"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@string/press_the_mic_button"
+            app:layout_constraintBottom_toTopOf="@+id/pressTheButton_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="5dp"/>
 
         <TextView
-            android:id="@+id/pressTheTextButton"
+            android:id="@+id/pressTheButton_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="@string/press_the_text_button"
+            android:text="@string/press_the_pen_button"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/pressTheButton_vocal"
+            android:layout_marginBottom="5dp"/>
 
         <ProgressBar
             android:id="@+id/sentencePronouncedSpinner"
@@ -119,7 +124,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="@string/sentence_pronounced_title"
+            android:text="@string/text_to_translate_title"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="@+id/sentencePronounced"
             app:layout_constraintStart_toStartOf="parent"
@@ -152,8 +157,8 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
-        android:layout_width="413dp"
-        android:layout_height="551dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

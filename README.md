@@ -15,8 +15,21 @@ Pré-requis
 * Kotlin 1.4.20
 * Gradle 4.1.1
 
+
+Démarrer l'application
+----------------------
+## Via l'APK
+* Téléversez l'APK sur votre appareil Android
+* Installez l'application et lancez la
+
+## Via Android Studio
+* Sur l'écran de lancement, cliquez sur Get from Version Control et entrez l'URL suivante :  `https://github.com/ndelvoye/babelblock`
+* Une fois le projet importé, vous pouvez build le projet et le démarrer sur votre appareil/sur un émulateur
+
+**Note importante :** Le téléchargement des modèles est effectué au lancement de l'application. Il faut attendre la fin du téléchargement avant d'effectuer toute action sur l'application (sous peine de faire crasher l'application)
+
 Aperçu de l'application
----------------
+-----------------------
 <img src="https://cdn.discordapp.com/attachments/459445161882288129/786620316835250216/Screenshot_20201210-164757_DELVOYE_LEGAL_BabelBlock.jpg" width="250" />
 
 Contribuer au projet

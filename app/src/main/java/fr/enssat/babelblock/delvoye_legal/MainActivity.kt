@@ -3,10 +3,10 @@ package fr.enssat.babelblock.delvoye_legal
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.InputType
 import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED
+            != PackageManager.PERMISSION_GRANTED
         ) {
             checkPermission()
         }
@@ -77,26 +77,26 @@ class MainActivity : AppCompatActivity() {
         var count = 0
         val modelManager = RemoteModelManager.getInstance()
         modelManager
-                .getDownloadedModels(TranslateRemoteModel::class.java)
-                .addOnSuccessListener { models ->
-                    LocaleUtils.getAvailableLocales().forEach {
-                        if (!models.contains(TranslateRemoteModel.Builder(it.language).build())) {
-                            modelManager.download(
-                                    TranslateRemoteModel.Builder(it.language).build(),
-                                    DownloadConditions.Builder()
-                                            .requireWifi()
-                                            .build()
-                            ).addOnSuccessListener {
-                                count++
-                            }
-                        } else {
+            .getDownloadedModels(TranslateRemoteModel::class.java)
+            .addOnSuccessListener { models ->
+                LocaleUtils.getAvailableLocales().forEach {
+                    if (!models.contains(TranslateRemoteModel.Builder(it.language).build())) {
+                        modelManager.download(
+                            TranslateRemoteModel.Builder(it.language).build(),
+                            DownloadConditions.Builder()
+                                .requireWifi()
+                                .build()
+                        ).addOnSuccessListener {
                             count++
                         }
+                    } else {
+                        count++
                     }
                 }
-                .addOnFailureListener {
-                    // Error.
-                }
+            }
+            .addOnFailureListener {
+                // Error.
+            }
 
         // RECYCLER VIEW & ADAPTER
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
@@ -119,12 +119,12 @@ class MainActivity : AppCompatActivity() {
 
         // Drag & drop + Delete by Swiping (UI)
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-                0,
-                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
             override fun getMovementFlags(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
             ): Int {
                 val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
                 val swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
@@ -132,9 +132,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
             ): Boolean {
                 val from = viewHolder.adapterPosition
                 val to = target.adapterPosition
@@ -168,31 +168,33 @@ class MainActivity : AppCompatActivity() {
 
         // Listeners
         selectSpokenLanguageSpinner?.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        // Do nothing
-                    }
-
-                    override fun onItemSelected(
-                            parent: AdapterView<*>?,
-                            view: View?,
-                            position: Int,
-                            id: Long
-                    ) {
-                        selectedSpokenLanguage =
-                                LocaleUtils.reduceLanguage(selectSpokenLanguageSpinner.selectedItem.toString())
-                        speechToText =
-                                service.speechToText(
-                                        LocaleUtils.stringToLocale(
-                                                selectedSpokenLanguage
-                                        )
-                                )
-                        textToSpeech = service.textToSpeech(LocaleUtils.stringToLocale(
-                                selectedSpokenLanguage
-                        ))
-                        Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
-                    }
+            object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // Do nothing
                 }
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    selectedSpokenLanguage =
+                        LocaleUtils.reduceLanguage(selectSpokenLanguageSpinner.selectedItem.toString())
+                    speechToText =
+                        service.speechToText(
+                            LocaleUtils.stringToLocale(
+                                selectedSpokenLanguage
+                            )
+                        )
+                    textToSpeech = service.textToSpeech(
+                        LocaleUtils.stringToLocale(
+                            selectedSpokenLanguage
+                        )
+                    )
+                    Timber.d("selectedSpokenLanguage = $selectedSpokenLanguage")
+                }
+            }
 
         startTalkButton.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -208,65 +210,15 @@ class MainActivity : AppCompatActivity() {
                 speechToText.start(object : SpeechToTextTool.Listener {
                     override fun onResult(text: String, isFinal: Boolean) {
                         if (isFinal) {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                sentencePronouncedSpinner.visibility = View.INVISIBLE
-                                sentencePronouncedTitle.visibility = View.VISIBLE
-                                sentencePronounced.visibility = View.VISIBLE
-                                sentencePronouncedListenButton.visibility = View.VISIBLE
-                                sentencePronounced.text = text.capitalize(
-                                        LocaleUtils.stringToLocale(selectedSpokenLanguage)
-                                )
-
-                                // EDIT LE TTS
-                                sentencePronouncedListenButton.setOnClickListener {
-                                    CoroutineScope(Dispatchers.Default).launch {
-                                        textToSpeech.speak(this@MainActivity, text)
-                                    }
-                                }
-
-                                Timber.d("=> ${adapter.currentList}")
-                                val localeItemFlow = flow {
-                                    adapter.currentList.forEach {
-                                        emit(it)
-                                    }
-                                }
-                                // consume the flow (Sequentially)
-                                var itemCounter = 0
-                                localeItemFlow.map { translationBlock ->
-                                    val index = adapter.currentList.indexOf(translationBlock)
-                                    Timber.d("Started $translationBlock (#$index)")
-                                    if (index == 0) {
-                                        service.translator(
-                                                LocaleUtils.stringToLocale(selectedSpokenLanguage),
-                                                LocaleUtils.stringToLocale(translationBlock.language)
-                                        ).translateAsync(text).await()
-                                    } else {
-                                        val previousItem = adapter.currentList[index - 1]
-                                        service.translator(
-                                                LocaleUtils.stringToLocale(previousItem.language),
-                                                LocaleUtils.stringToLocale(translationBlock.language)
-                                        ).translateAsync(previousItem.translation).await()
-                                    }
-                                }.onEach { res ->
-                                    Timber.d("Updating item #$itemCounter")
-                                    val currentItem = adapter.currentList[itemCounter]
-                                    currentItem.translation = res.capitalize(
-                                            LocaleUtils.stringToLocale(currentItem.language)
-                                    )
-                                    translationBlockViewModel.update(currentItem)
-                                    itemCounter++
-                                }.collect {
-                                    Timber.d("Translated $it")
-                                }
-                            }
+                            startTranslateProcess(text, adapter, service)
                         }
                     }
 
                     override fun onError() {
                         Snackbar.make(
-                                startTalkButton,
-                                "An error occurred... Try again !",
-                                Snackbar.LENGTH_SHORT
+                            startTalkButton,
+                            "An error occurred... Try again !",
+                            Snackbar.LENGTH_SHORT
                         ).show()
                         sentencePronouncedSpinner.visibility = View.INVISIBLE
                         sentencePronouncedTitle.visibility = View.INVISIBLE
@@ -288,71 +240,17 @@ class MainActivity : AppCompatActivity() {
             sentencePronounced.text = "" // Delete old SpeechToText
             sentencePronouncedSpinner.visibility = View.VISIBLE // Display Loading Spinner
             sentencePronouncedListenButton.visibility = View.INVISIBLE
-            val dialog: MaterialDialog =MaterialDialog(this).title(R.string.write_dialog_title).show {
-                input(){dialog, text ->
-                    // Text submitted with the action button
-                    CoroutineScope(Dispatchers.Main).launch {
-                        var textScope = ""+ text.toString()
 
-                        sentencePronounced.text = textScope.capitalize(
-                                LocaleUtils.stringToLocale(selectedSpokenLanguage)
-                        )
-                        sentencePronouncedSpinner.visibility = View.INVISIBLE
-                        sentencePronouncedTitle.visibility = View.VISIBLE
-                        sentencePronounced.visibility = View.VISIBLE
-                        sentencePronouncedListenButton.visibility = View.VISIBLE
-
-                        // EDIT LE TTS
-                        /*
-                        sentencePronouncedListenButton.setOnClickListener {
-                            CoroutineScope(Dispatchers.Default).launch {
-                                textToSpeech.speak(this@MainActivity, textScope)
-                            }
-                        }*/
-
-                        Timber.d("=> ${adapter.currentList}")
-                        val localeItemFlow = flow {
-                            adapter.currentList.forEach {
-                                emit(it)
-                            }
-                        }
-                        // consume the flow (Sequentially)
-                        var itemCounter = 0
-                        localeItemFlow.map { translationBlock ->
-                            val index = adapter.currentList.indexOf(translationBlock)
-                            Timber.d("Started $translationBlock (#$index)")
-                            if (index == 0) {
-                                service.translator(
-                                        LocaleUtils.stringToLocale(selectedSpokenLanguage),
-                                        LocaleUtils.stringToLocale(translationBlock.language)
-                                ).translateAsync(textScope).await()
-                            } else {
-                                val previousItem = adapter.currentList[index - 1]
-                                service.translator(
-                                        LocaleUtils.stringToLocale(previousItem.language),
-                                        LocaleUtils.stringToLocale(translationBlock.language)
-                                ).translateAsync(previousItem.translation).await()
-                            }
-                        }.onEach { res ->
-                            Timber.d("Updating item #$itemCounter")
-                            val currentItem = adapter.currentList[itemCounter]
-                            currentItem.translation = res.capitalize(
-                                    LocaleUtils.stringToLocale(currentItem.language)
-                            )
-                            translationBlockViewModel.update(currentItem)
-                            itemCounter++
-                        }.collect {
-                            Timber.d("Translated $it")
-                        }
-                    }
+            MaterialDialog(this).title(R.string.write_dialog_title).show {
+                input(inputType = InputType.TYPE_CLASS_TEXT) { dialog, _ ->
+                    startTranslateProcess(dialog.getInputField().text.toString(), adapter, service)
                 }
                 positiveButton(R.string.submit)
             }
-
-
         }
 
 
+        // Floating action button (bottom right)
         addLanguageButton.setOnClickListener {
             Timber.d("Opened AddTranslationBlockDialog")
             MaterialDialog(this).title(R.string.select_language_to_translate_dialog_title).show {
@@ -361,17 +259,75 @@ class MainActivity : AppCompatActivity() {
                     var index = 0
                     if (translationBlocksCounter != 0) index = translationBlocksMaxPos + 1
                     translationBlockViewModel.insert(
-                            TranslationBlock(
-                                    index,
-                                    LocaleUtils.reduceLanguage(selectedLanguage as String),
-                                    ""
-                            )
+                        TranslationBlock(
+                            index,
+                            LocaleUtils.reduceLanguage(selectedLanguage as String),
+                            ""
+                        )
                     )
                 }
             }
         }
 
 
+    }
+
+    private fun startTranslateProcess(
+        text: String,
+        adapter: TranslationBlocksAdapter,
+        service: BlockService
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            sentencePronouncedSpinner.visibility = View.INVISIBLE
+            sentencePronouncedTitle.visibility = View.VISIBLE
+            sentencePronounced.visibility = View.VISIBLE
+            sentencePronouncedListenButton.visibility = View.VISIBLE
+            sentencePronounced.text = text.capitalize(
+                LocaleUtils.stringToLocale(selectedSpokenLanguage)
+            )
+
+            // EDIT LE TTS
+            sentencePronouncedListenButton.setOnClickListener {
+                CoroutineScope(Dispatchers.Default).launch {
+                    textToSpeech.speak(this@MainActivity, text)
+                }
+            }
+
+            Timber.d("=> ${adapter.currentList}")
+            val localeItemFlow = flow {
+                adapter.currentList.forEach {
+                    emit(it)
+                }
+            }
+            // consume the flow (Sequentially)
+            var itemCounter = 0
+            localeItemFlow.map { translationBlock ->
+                val index = adapter.currentList.indexOf(translationBlock)
+                Timber.d("Started $translationBlock (#$index)")
+                if (index == 0) {
+                    service.translator(
+                        LocaleUtils.stringToLocale(selectedSpokenLanguage),
+                        LocaleUtils.stringToLocale(translationBlock.language)
+                    ).translateAsync(text).await()
+                } else {
+                    val previousItem = adapter.currentList[index - 1]
+                    service.translator(
+                        LocaleUtils.stringToLocale(previousItem.language),
+                        LocaleUtils.stringToLocale(translationBlock.language)
+                    ).translateAsync(previousItem.translation).await()
+                }
+            }.onEach { res ->
+                Timber.d("Updating item #$itemCounter")
+                val currentItem = adapter.currentList[itemCounter]
+                currentItem.translation = res.capitalize(
+                    LocaleUtils.stringToLocale(currentItem.language)
+                )
+                translationBlockViewModel.update(currentItem)
+                itemCounter++
+            }.collect {
+                Timber.d("Translated $it")
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -384,9 +340,9 @@ class MainActivity : AppCompatActivity() {
      */
     private fun checkPermission() {
         ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                recordAudioRequestCode
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            recordAudioRequestCode
         )
     }
 
@@ -394,9 +350,9 @@ class MainActivity : AppCompatActivity() {
      * Request Permissions
      */
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<String?>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == recordAudioRequestCode && grantResults.isNotEmpty()) {
